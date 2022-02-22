@@ -1,10 +1,9 @@
-import React, { useRef, useMemo, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React, {useRef, useMemo, useState, useEffect} from 'react';
 import { FlatList, StyleSheet, Text, View, SafeAreaView } from 'react-native';
 import ListItem from './components/ListItem';
 import Chart from './components/chart';
-import { BottomSheetModalProvider, BottomSheetModal } from '@gorhom/bottom-sheet';
-import { SAMPLE_DATA } from './assets/data/sampleData';
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { getMarketData } from './services/cryptoService';
 
 
 const ListHeader = () => (
@@ -17,7 +16,17 @@ const ListHeader = () => (
 )
 
 export default function App() {
+    const [data, setData] = useState([]);
     const [selectedCoinData, setSelectedCoinData] = useState(null);
+
+    useEffect(() => {
+      const fetchMarketData = async () => {
+        const marketData = await getMarketData();
+        setData(marketData);
+      }
+  
+      fetchMarketData();
+    }, [])
 
     const bottomSheetModalRef = useRef(null);
 
@@ -33,7 +42,7 @@ export default function App() {
     <SafeAreaView style={styles.container}>
      <FlatList 
         keyExtractor={(item) => item.id}
-        data={SAMPLE_DATA}
+        data={data}
         renderItem={({ item }) => (
           <ListItem 
             name={item.name} 
@@ -61,7 +70,7 @@ export default function App() {
       name={setSelectedCoinData.name}
       symbol={setSelectedCoinData.symbol}
       priceChangePercentage7d={setSelectedCoinData.price_change_percentage_7d_in_currency}
-      sparkline={selectedCoinData.sparkline_in_7d.price}
+      sparkline={selectedCoinData?.sparkline_in_7d.price}
     />
       )
     : null}
